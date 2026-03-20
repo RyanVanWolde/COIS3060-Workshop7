@@ -2,10 +2,12 @@
 Tests for Task Manager API.
 NOTE: Only two tests exist. More are needed (see GitHub Issues).
 """
-import pytest
-import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..')
+import sys
+
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import app as app_module
 from app import app
 
@@ -36,6 +38,20 @@ def test_create_task(client):
     assert data["title"] == "Fix the login bug"
     assert data["completed"] is False
     assert "id" in data
+
+
+def test_create_task_missing_title_returns_bad_request(client):
+    response = client.post("/tasks", json={"description": "Missing title"})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "title is required"}
+
+
+def test_create_task_empty_title_returns_bad_request(client):
+    response = client.post("/tasks", json={"title": "", "description": "Empty title"})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "title is required"}
 
 
 def test_get_tasks_empty(client):

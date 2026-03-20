@@ -24,10 +24,15 @@ def get_tasks():
 @app.route("/tasks", methods=["POST"])
 def create_task():
     global next_id
-    data = request.get_json()
+    data = request.get_json() or {}
+
+    title = data.get("title")
+    if title == "" or title is None:
+        return jsonify({"error": "title is required"}), 400
+
     task = {
         "id": next_id,
-        "title": data["title"],           # KeyError if "title" missing -> 500
+        "title": title,
         "description": data.get("description", ""),
         "completed": False,
     }
