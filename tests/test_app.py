@@ -5,7 +5,7 @@ NOTE: Only two tests exist. More are needed (see GitHub Issues).
 import pytest
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..')
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import app as app_module
 from app import app
 
@@ -44,3 +44,24 @@ def test_get_tasks_empty(client):
     assert response.status_code == 200
     data = response.get_json()
     assert data["tasks"] == []
+
+
+def test_complete_task_toggles_completed_state(client):
+    """Test PATCH /tasks/<id>/complete toggles completed on each call."""
+    create_response = client.post(
+        "/tasks",
+        json={"title": "Toggle completion", "description": "Verify toggle behavior"},
+    )
+    task_id = create_response.get_json()["id"]
+
+    first_response = client.patch(f"/tasks/{task_id}/complete")
+    assert first_response.status_code == 200
+    assert first_response.get_json()["completed"] is True
+
+    second_response = client.patch(f"/tasks/{task_id}/complete")
+    assert second_response.status_code == 200
+    assert second_response.get_json()["completed"] is False
+
+    third_response = client.patch(f"/tasks/{task_id}/complete")
+    assert third_response.status_code == 200
+    assert third_response.get_json()["completed"] is True
